@@ -18,7 +18,8 @@ return new class extends Migration
             $table->integer('status')->default(0);
             $table->string('description_short')->nullable();
             $table->json('description')->nullable();
-            $table->string('image_main', 255)->nullable();
+            $table->string('image', 255)->nullable();
+            $table->json('links')->nullable();
             
             $table->foreignId('project_id')
                 ->constrained('projects')

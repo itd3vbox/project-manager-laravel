@@ -124,8 +124,24 @@ class ProjectController extends Controller
         ]);
 
         $project = ProjectEntity::findOrFail($id);
-        $project->update($validatedData);
 
+        if (isset($validatedData['name']))
+            $project->name = $validatedData['name'];
+    
+        if (isset($validatedData['description_short']))
+            $project->description_short = $validatedData['description_short'];
+    
+        if (isset($validatedData['description']))
+            $project->description = $validatedData['description'];
+
+        if (isset($validatedData['status']))
+            $project->status = $validatedData['status'];
+    
+        if (isset($validatedData['website']))
+            $project->website = $validatedData['website'];
+    
+        if (isset($validatedData['links']))
+            $project->links = $validatedData['links'];
 
         if ($project->image) 
         {
@@ -140,8 +156,6 @@ class ProjectController extends Controller
 
         if ($request->hasFile('image')) 
         {
-
-            dd('image');
             $imageFile = $request->file('image');
             $imageFileName =  Str::random(10) . '_' . now()->format('YmdHis') . '.' . $imageFile->getClientOriginalExtension();
             $imagePath = $imageFile->storeAs($project->folder, $imageFileName, 'public');
