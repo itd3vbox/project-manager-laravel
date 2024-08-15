@@ -191,6 +191,12 @@ class ProjectController extends Controller
             // }
         }
 
+        if ($project->folder)
+        {
+            Storage::disk('public')->deleteDirectory($project->folder);
+            Storage::disk('private')->deleteDirectory($project->folder);
+        }
+
         return response()->json([
             'message' => 'Project deleted successfully.'
         ], 200);
