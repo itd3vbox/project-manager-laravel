@@ -4,30 +4,44 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Models\Base\Project as ProjectEntity;
+use App\Services\API\Search\ProjectSearchService;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    protected $projectSearchService;
+
+    public function __construct(ProjectSearchService $projectSearchService)
     {
-        $validatedData = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'description_short' => 'nullable|string',
-            'status' => 'nullable|integer',
-            'folder' => 'nullable|string|max:255',
-            'image_main' => 'nullable|string|max:255',
+        $this->projectSearchService = $projectSearchService;
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function search(Request $request) : JsonResponse
+    {
+        $validated = $request->validate([
+            'is_asc' => 'nullable|boolean',
+            'max' => 'nullable|integer|min:1|max:100',
+            'project_id' => 'nullable|integer|exists:projects,id',
         ]);
 
-        $project = ProjectEntity::create($validatedData);
+        $options = array_merge([
+            'is_asc' => false,
+            'max' => 20,
+        ], $validated);
+
+        $projects = $this->projectSearchService->searchAll($options);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Project created successfully.',
-            'data' => $project
-        ], 201);
+            'message' => 'Projects retrieved successfully',
+            'data' => $projects,
+        ], 200);
     }
 
     /**
@@ -35,12 +49,63 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        $project = ProjectEntity::findOrFail($id);
+        $project = ProjectEntity::find($id);
 
         return response()->json([
-            'success' => true,
             'data' => $project
         ], 200);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description_short' => 'required|string',
+            'description' => 'nullable|json',
+            'status' => 'nullable|integer',
+            'website' => 'nullable|string',
+            'links' => 'nullable|json',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+        ]);
+
+        $project = new ProjectEntity();
+        $project->name = $validatedData['name'];
+        $project->description_short = $validatedData['description_short'];
+        if (isset($validatedData['description']))
+            $project->description = $validatedData['description'];
+        if (isset($validatedData['status']))
+            $project->status = $validatedData['status'];
+        if (isset($validatedData['website']))
+            $project->website = $validatedData['website'];
+        if (isset($validatedData['links']))
+            $project->links = $validatedData['links'];
+        $project->folder = 'project-' . now()->format('YmdHis');
+        
+        $project->save();
+
+        $folder = $project->folder;
+        Storage::disk('private')->makeDirectory($folder);
+        Storage::disk('public')->makeDirectory($folder);
+
+        if ($request->hasFile('image')) 
+        {
+            $imageFile = $request->file('image');
+            $imageFileName =  Str::random(10) . '_' . now()->format('YmdHis') . '.' . $imageFile->getClientOriginalExtension();
+            $imagePath = $imageFile->storeAs($project->folder, $imageFileName, 'public');
+            $project->image = $imageFileName;
+        }
+        else
+            $project->image = null;
+
+        $project->save();
+
+        return response()->json([
+            'message' => 'Project created successfully.',
+            'data' => $project
+        ], 201);
     }
 
     /**
@@ -51,16 +116,43 @@ class ProjectController extends Controller
         $validatedData = $request->validate([
             'name' => 'nullable|string|max:255',
             'description_short' => 'nullable|string',
+            'description' => 'nullable|json',
             'status' => 'nullable|integer',
-            'folder' => 'nullable|string|max:255',
-            'image_main' => 'nullable|string|max:255',
+            'website' => 'nullable|string',
+            'links' => 'nullable|json',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ]);
 
         $project = ProjectEntity::findOrFail($id);
         $project->update($validatedData);
 
+
+        if ($project->image) 
+        {
+            Storage::disk('public')->delete($project->image);
+
+            // $existingImagePath = public_path($project->image);
+
+            // if (file_exists($existingImagePath)) {
+            //     unlink($existingImagePath);
+            // }
+        }
+
+        if ($request->hasFile('image')) 
+        {
+
+            dd('image');
+            $imageFile = $request->file('image');
+            $imageFileName =  Str::random(10) . '_' . now()->format('YmdHis') . '.' . $imageFile->getClientOriginalExtension();
+            $imagePath = $imageFile->storeAs($project->folder, $imageFileName, 'public');
+            $project->image = $imageFileName;
+        }
+        else
+            $project->image = null;
+
+        $project->save();
+
         return response()->json([
-            'success' => true,
             'message' => 'Project updated successfully.',
             'data' => $project
         ], 200);
@@ -74,8 +166,18 @@ class ProjectController extends Controller
         $project = ProjectEntity::findOrFail($id);
         $project->delete();
 
+        if ($project->image) 
+        {
+            Storage::disk('public')->delete($project->image);
+
+            // $existingImagePath = public_path($project->image);
+
+            // if (file_exists($existingImagePath)) {
+            //     unlink($existingImagePath);
+            // }
+        }
+
         return response()->json([
-            'success' => true,
             'message' => 'Project deleted successfully.'
         ], 200);
     }

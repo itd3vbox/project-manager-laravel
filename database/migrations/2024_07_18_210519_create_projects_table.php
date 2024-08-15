@@ -19,8 +19,8 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->integer('status')->default(0);
             $table->string('folder')->nullable();
-            $table->string('image_main', 255)->nullable();
-            $table->string('links')->nullable();
+            $table->string('image', 255)->nullable();
+            $table->json('links')->nullable();
             $table->string('website')->nullable();
             
             $table->timestamps();
