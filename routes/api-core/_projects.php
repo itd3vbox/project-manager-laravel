@@ -25,17 +25,17 @@ Route::prefix('projects')->middleware('auth:sanctum')->group(function () {
         ->name('api-core.projects.destroy');
         
     Route::patch('/{id}/image', [ProjectController::class, 'updateImage'])
-        ->name('api-core.projects.update.image');
+        ->name('api-core.projects.update-image');
 
     Route::patch('/{id}/description-short', [ProjectController::class, 'updateDescriptionShort'])
-        ->name('api-core.projects.update.description-short');
+        ->name('api-core.projects.update-description-short');
     
     Route::patch('/{id}/description', [ProjectController::class, 'updateDescription'])
-        ->name('api-core.projects.update.description');
+        ->name('api-core.projects.update-description');
 
     Route::patch('/{id}/links', [ProjectController::class, 'updateLinks'])
-        ->name('api-core.projects.update.links');
+        ->name('api-core.projects.update-links');
     
     Route::patch('/{id}/website', [ProjectController::class, 'updateWebsite'])
-        ->name('api-core.projects.update.website');
+        ->name('api-core.projects.update-website');
 });

@@ -25,14 +25,14 @@ Route::prefix('tasks')->middleware('auth:sanctum')->group(function () {
         ->name('api-core.tasks.destroy');
         
     Route::patch('/{id}/image', [TaskController::class, 'updateImage'])
-        ->name('api-core.tasks.update.image');
+        ->name('api-core.tasks.update-image');
 
     Route::patch('/{id}/description-short', [TaskController::class, 'updateDescriptionShort'])
-        ->name('api-core.tasks.update.description-short');
+        ->name('api-core.tasks.update-description-short');
     
     Route::patch('/{id}/description', [TaskController::class, 'updateDescription'])
-        ->name('api-core.tasks.update.description');
+        ->name('api-core.tasks.update-description');
 
     Route::patch('/{id}/links', [TaskController::class, 'updateLinks'])
-        ->name('api-core.tasks.update.links');
+        ->name('api-core.tasks.update-links');
 });

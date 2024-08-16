@@ -25,17 +25,17 @@ Route::prefix('automates')->middleware('auth:sanctum')->group(function () {
         ->name('api-core.automates.destroy');
         
     Route::patch('/{id}/type', [AutomateController::class, 'updateType'])
-        ->name('api-core.automates.update.type');
+        ->name('api-core.automates.update-type');
 
     Route::patch('/{id}/description-short', [AutomateController::class, 'updateDescriptionShort'])
-        ->name('api-core.automates.update.description-short');
+        ->name('api-core.automates.update-description-short');
     
     Route::patch('/{id}/description', [AutomateController::class, 'updateDescription'])
-        ->name('api-core.automates.update.description');
+        ->name('api-core.automates.update-description');
 
     Route::patch('/{id}/command', [AutomateController::class, 'updateCommand'])
-        ->name('api-core.automates.update.command');
+        ->name('api-core.automates.update-command');
     
-    Route::patch('/{id}/type', [AutomateController::class, 'updateType'])
-        ->name('api-core.automates.update.type');
+    Route::patch('/{id}/status', [AutomateController::class, 'updateStatus'])
+        ->name('api-core.automates.update-status');
 });

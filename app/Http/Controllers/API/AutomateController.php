@@ -67,6 +67,7 @@ class AutomateController extends Controller
             'description_short' => 'required|string|max:255',
             'description' => 'nullable|json',
             'command' => 'nullable|string',
+            'folder' => 'nullable|string',
             'status' => 'nullable|integer',
             'project_id' => 'required|integer|exists:projects,id',
         ]);
@@ -81,14 +82,11 @@ class AutomateController extends Controller
             $automate->status = $validatedData['status'];
         if (isset($validatedData['command']))
             $automate->command = $validatedData['command'];
-        $automate->folder = 'automate-' . now()->format('YmdHis');
+        if (isset($validatedData['folder']))
+            $automate->folder = $validatedData['folder'];
         $automate->project_id = $validatedData['project_id'];
 
         $automate->save();
-
-        $folder = $automate->folder;
-        Storage::disk('private')->makeDirectory($folder);
-        Storage::disk('public')->makeDirectory($folder);
 
         return response()->json([
             'message' => 'Automate created successfully.',
@@ -107,6 +105,7 @@ class AutomateController extends Controller
             'description_short' => 'nullable|string|max:255',
             'description' => 'nullable|json',
             'command' => 'nullable|string',
+            'folder' => 'nullable|string',
             'status' => 'nullable|integer',
         ]);
 
@@ -129,6 +128,9 @@ class AutomateController extends Controller
     
         if (isset($validatedData['command']))
             $automate->command = $validatedData['command'];
+        
+        if (isset($validatedData['folder']))
+            $automate->folder = $validatedData['folder'];
 
         $automate->save();
 
@@ -145,12 +147,6 @@ class AutomateController extends Controller
     {
         $automate = AutomateEntity::findOrFail($id);
         $automate->delete();
-
-        if ($automate->folder)
-        {
-            Storage::disk('public')->deleteDirectory($automate->folder);
-            Storage::disk('private')->deleteDirectory($automate->folder);
-        }
 
         return response()->json([
             'message' => 'Automate deleted successfully.'

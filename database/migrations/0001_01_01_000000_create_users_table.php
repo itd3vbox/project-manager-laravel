@@ -21,6 +21,8 @@ return new class extends Migration
 
             $table->string('username', length: 100)->unique();
             $table->string('last_ip')->nullable();
+            $table->string('folder')->nullable();
+            $table->string('avatar')->nullable();
 
             $table->timestamps();
         });
