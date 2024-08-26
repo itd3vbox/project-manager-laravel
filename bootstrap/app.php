@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: [
             //'/*',
-            'http://projectmanager.demo/api/sign-in',
+            'http://projectmanager.demo/api/*',
         ]);
         $middleware->statefulApi();
     })

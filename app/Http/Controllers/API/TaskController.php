@@ -120,6 +120,8 @@ class TaskController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ]);
 
+        //dd($validatedData);
+
         $task = TaskEntity::findOrFail($id);
 
         if (isset($validatedData['title']))

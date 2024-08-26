@@ -14,7 +14,7 @@ Route::prefix('projects')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/search', [ProjectController::class, 'search'])
         ->name('api-core.projects.search');
-
+        
     Route::post('/', [ProjectController::class, 'store'])
         ->name('api-core.projects.store');
 
