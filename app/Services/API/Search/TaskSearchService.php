@@ -18,12 +18,18 @@ class TaskSearchService
             'is_asc' => false,
             'max' => 20,
             'status' => null,
+            'with_project' => false,
         ], $options);
 
         $query = TaskEntity::query();
 
         if (!is_null($options['status'])) {
             $query->where('status', $options['status']);
+        }
+
+        if ($options['with_project'] === true)
+        {
+            $query->with('project');
         }
 
         $orderDirection = $options['is_asc'] ? 'asc' : 'desc';

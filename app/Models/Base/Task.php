@@ -27,7 +27,7 @@ class Task extends Model
     public function getStatusInfoAttribute()
     {
         $value = 0;
-        $value_text = 'closed';
+        $value_text = 'reset';
 
         if ($this->status === 1) 
         {

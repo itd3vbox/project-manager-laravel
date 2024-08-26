@@ -23,6 +23,9 @@ Route::prefix('tasks')->middleware('auth:sanctum')->group(function () {
     
     Route::delete('/{id}', [TaskController::class, 'destroy'])
         ->name('api-core.tasks.destroy');
+
+    Route::patch('/{id}/status', [TaskController::class, 'updateStatus'])
+        ->name('api-core.tasks.update-status');
         
     Route::patch('/{id}/image', [TaskController::class, 'updateImage'])
         ->name('api-core.tasks.update-image');

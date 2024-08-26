@@ -29,6 +29,7 @@ class TaskController extends Controller
             'is_asc' => 'nullable|boolean',
             'max' => 'nullable|integer|min:1|max:100',
             'project_id' => 'nullable|integer|exists:projects,id',
+            'with_project' => 'nullable|boolean',
         ]);
 
         $options = array_merge([
@@ -139,9 +140,6 @@ class TaskController extends Controller
         if (isset($validatedData['links']))
             $task->links = $validatedData['links'];
     
-        if ($task->image)
-            Storage::disk('public')->delete($task->image);
-
         if ($task->image) 
         {
             Storage::disk('public')->delete($task->image);
@@ -157,7 +155,7 @@ class TaskController extends Controller
         {
             $imageFile = $request->file('image');
             $imageFileName =  Str::random(10) . '_' . now()->format('YmdHis') . '.' . $imageFile->getClientOriginalExtension();
-            $imagePath = $imageFile->storeAs($task->folder, $imageFileName, 'public');
+            $imagePath = $imageFile->storeAs($task->project->folder, $imageFileName, 'public');
             $task->image = $imageFileName;
         }
         else
@@ -181,6 +179,27 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Task deleted successfully.'
+        ], 200);
+    }
+
+    public function updateStatus(Request $request, string $id)
+    {
+        $validatedData = $request->validate([
+            'status' => 'nullable|integer',
+        ]);
+
+        //dd($validatedData);
+
+        $task = TaskEntity::findOrFail($id);
+
+        if (isset($validatedData['status']))
+            $task->status = $validatedData['status'];
+    
+        $task->save();
+
+        return response()->json([
+            'message' => 'Task updated successfully.',
+            'data' => $task
         ], 200);
     }
 }
