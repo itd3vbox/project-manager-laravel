@@ -33,7 +33,7 @@ class TaskSearchService
         }
 
         $orderDirection = $options['is_asc'] ? 'asc' : 'desc';
-        $query->orderBy('created_at', $orderDirection);
+        $query->orderBy('updated_at', $orderDirection);
 
         return $query->paginate($options['max']);
     }

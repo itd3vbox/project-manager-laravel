@@ -29,6 +29,7 @@ class AutomateController extends Controller
             'is_asc' => 'nullable|boolean',
             'max' => 'nullable|integer|min:1|max:100',
             'project_id' => 'nullable|integer|exists:projects,id',
+            'with_project' => 'nullable|boolean',
         ]);
 
         $options = array_merge([
@@ -85,8 +86,13 @@ class AutomateController extends Controller
         if (isset($validatedData['folder']))
             $automate->folder = $validatedData['folder'];
         $automate->project_id = $validatedData['project_id'];
+        $automate->folder = 'automate-' . now()->format('YmdHis');
 
         $automate->save();
+
+        $folder = $automate->folder;
+        Storage::disk('private')->makeDirectory($folder);
+        Storage::disk('public')->makeDirectory($folder);
 
         return response()->json([
             'message' => 'Automate created successfully.',
@@ -152,4 +158,62 @@ class AutomateController extends Controller
             'message' => 'Automate deleted successfully.'
         ], 200);
     }
+
+    /**
+     * Execute a command from an existing automate record.
+     */
+    public function execute(Request $request, $id)
+    {
+        $automate = AutomateEntity::find($id);
+
+        if (!$automate) {
+            return response()->json([
+                'message' => 'Automate not found'
+            ], 404);
+        }
+
+        if (!$automate->command) {
+            return response()->json([
+                'message' => 'No command set for this automate'
+            ], 400);
+        }
+
+        if (!Storage::disk('public')->exists($automate->folder)) {
+            Storage::disk('public')->makeDirectory($automate->folder);
+        }
+
+        $outputLogPath = Storage::disk('public')->path($automate->folder . '/output.log');
+
+        try {
+            // Execute the command and capture the output
+            $output = shell_exec($automate->command . ' 2>&1');
+
+            if ($output === null) {
+                $output = "Command executed successfully with no output.\n";
+            }
+
+
+            // Write the output to the log file
+            file_put_contents($outputLogPath, $output);
+
+            return response()->json([
+                'message' => 'Command executed successfully.',
+                'output' => $output
+            ]);
+        } 
+        catch (\Exception $e) {
+            // Log error using Laravel's logging mechanism
+            Log::error('Failed to execute command', ['error' => $e->getMessage()]);
+
+            // Append the error message to the log file
+            $errorOutput = "Error: " . $e->getMessage() . "\n";
+            file_put_contents($outputLogPath, $errorOutput, FILE_APPEND);
+
+            return response()->json([
+                'message' => 'Failed to execute command.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

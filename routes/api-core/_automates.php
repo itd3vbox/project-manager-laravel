@@ -38,4 +38,7 @@ Route::prefix('automates')->middleware('auth:sanctum')->group(function () {
     
     Route::patch('/{id}/status', [AutomateController::class, 'updateStatus'])
         ->name('api-core.automates.update-status');
+
+    Route::post('/{id}/execute', [AutomateController::class, 'execute'])
+        ->name('api-core.automates.execute');
 });
