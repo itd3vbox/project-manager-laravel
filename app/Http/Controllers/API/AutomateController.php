@@ -184,6 +184,8 @@ class AutomateController extends Controller
 
         $outputLogPath = Storage::disk('public')->path($automate->folder . '/output.log');
 
+        $startTime = microtime(true);
+
         try {
             // Execute the command and capture the output
             $output = shell_exec($automate->command . ' 2>&1');
@@ -192,16 +194,32 @@ class AutomateController extends Controller
                 $output = "Command executed successfully with no output.\n";
             }
 
+            $endTime = microtime(true);
+            $duration = ($endTime - $startTime) * 1000;
+
+            $automate->duration = $duration;
+            $automate->status = 1;
+            $automate->save();
 
             // Write the output to the log file
             file_put_contents($outputLogPath, $output);
 
             return response()->json([
                 'message' => 'Command executed successfully.',
-                'output' => $output
+                'output' => $output,
+                'duration' => $duration . ' ms'
             ]);
         } 
         catch (\Exception $e) {
+
+            $endTime = microtime(true);
+
+            $duration = ($endTime - $startTime) * 1000;
+
+            $automate->duration = $duration;
+            $automate->status = 2; 
+            $automate->save();
+
             // Log error using Laravel's logging mechanism
             Log::error('Failed to execute command', ['error' => $e->getMessage()]);
 
@@ -211,9 +229,97 @@ class AutomateController extends Controller
 
             return response()->json([
                 'message' => 'Failed to execute command.',
+                'error' => $e->getMessage(),
+                'duration' => $duration . ' ms'
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear the contents of the output log file for a specific automate record without deleting the file.
+     */
+    public function clear(Request $request, $id)
+    {
+        $automate = AutomateEntity::find($id);
+
+        if (!$automate) {
+            return response()->json([
+                'message' => 'Automate not found'
+            ], 404);
+        }
+
+        if (!Storage::disk('public')->exists($automate->folder)) {
+            return response()->json([
+                'message' => 'Log folder not found'
+            ], 404);
+        }
+
+        $outputLogPath = Storage::disk('public')->path($automate->folder . '/output.log');
+
+        try {
+            if (file_exists($outputLogPath)) {
+                file_put_contents($outputLogPath, '');
+
+                return response()->json([
+                    'message' => 'Log cleared successfully.'
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Log file does not exist.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to clear log', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'Failed to clear log.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Show the contents of the output log file for a specific automate record.
+     */
+    public function log(Request $request, $id)
+    {
+        $automate = AutomateEntity::find($id);
+
+        if (!$automate) {
+            return response()->json([
+                'message' => 'Automate not found'
+            ], 404);
+        }
+
+        if (!Storage::disk('public')->exists($automate->folder)) {
+            return response()->json([
+                'message' => 'Log folder not found'
+            ], 404);
+        }
+
+        $outputLogPath = Storage::disk('public')->path($automate->folder . '/output.log');
+
+        try {
+            if (file_exists($outputLogPath)) {
+
+                $logContent = file_get_contents($outputLogPath);
+
+                return response()->json([
+                    'message' => 'Log retrieved successfully.',
+                    'log' => $logContent
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Log file does not exist.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to retrieve log', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'Failed to retrieve log.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

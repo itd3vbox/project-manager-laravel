@@ -24,21 +24,27 @@ Route::prefix('automates')->middleware('auth:sanctum')->group(function () {
     Route::delete('/{id}', [AutomateController::class, 'destroy'])
         ->name('api-core.automates.destroy');
         
-    Route::patch('/{id}/type', [AutomateController::class, 'updateType'])
+    Route::patch('/{id}/update-type', [AutomateController::class, 'updateType'])
         ->name('api-core.automates.update-type');
 
-    Route::patch('/{id}/description-short', [AutomateController::class, 'updateDescriptionShort'])
+    Route::patch('/{id}/update-description-short', [AutomateController::class, 'updateDescriptionShort'])
         ->name('api-core.automates.update-description-short');
     
-    Route::patch('/{id}/description', [AutomateController::class, 'updateDescription'])
+    Route::patch('/{id}/update-description', [AutomateController::class, 'updateDescription'])
         ->name('api-core.automates.update-description');
 
-    Route::patch('/{id}/command', [AutomateController::class, 'updateCommand'])
+    Route::patch('/{id}/update-command', [AutomateController::class, 'updateCommand'])
         ->name('api-core.automates.update-command');
     
-    Route::patch('/{id}/status', [AutomateController::class, 'updateStatus'])
+    Route::patch('/{id}/update-status', [AutomateController::class, 'updateStatus'])
         ->name('api-core.automates.update-status');
 
     Route::post('/{id}/execute', [AutomateController::class, 'execute'])
         ->name('api-core.automates.execute');
+
+    Route::post('/{id}/clear', [AutomateController::class, 'clear'])
+        ->name('api-core.automates.clear');
+
+    Route::get('/{id}/log', [AutomateController::class, 'log'])
+        ->name('api-core.automates.log');
 });

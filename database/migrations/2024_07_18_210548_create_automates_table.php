@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->text('command')->nullable();
             $table->bigInteger('duration')->default(0);
+            $table->dateTime('exec_date')->nullable(); 
             $table->integer('status')->default(0);
             $table->string('folder', 255)->nullable();
 

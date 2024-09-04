@@ -7,6 +7,10 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
+use Database\Seeders\ProjectSeeder as ProjectSeeder;
+use Database\Seeders\TaskSeeder as TaskSeeder;
+use Database\Seeders\AutomateSeeder as AutomateSeeder;
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -21,6 +25,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'user1@pm.demo',
             'password' => Hash::make('123456'),
             'username' => 'user1',
+        ]);
+
+        $this->call([
+            ProjectSeeder::class,
+            TaskSeeder::class,
+            AutomateSeeder::class,
         ]);
     }
 }
